@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/2025-02-10/2025-02-10.iml" filepath="$PROJECT_DIR$/2025-02-10/2025-02-10.iml" />
+      <module fileurl="file://$PROJECT_DIR$/2025-02-12/2025-02-12.iml" filepath="$PROJECT_DIR$/2025-02-12/2025-02-12.iml" />
+      <module fileurl="file://$PROJECT_DIR$/2025-02-17/2025-02-17.iml" filepath="$PROJECT_DIR$/2025-02-17/2025-02-17.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/oop-ufal.iml" filepath="$PROJECT_DIR$/.idea/oop-ufal.iml" />
+      <module fileurl="file://$PROJECT_DIR$/2025-02-26/problem 4.1/problem 4.1.iml" filepath="$PROJECT_DIR$/2025-02-26/problem 4.1/problem 4.1.iml" />
+      <module fileurl="file://$PROJECT_DIR$/2025-02-26/problem 4.2/problem 4.2.iml" filepath="$PROJECT_DIR$/2025-02-26/problem 4.2/problem 4.2.iml" />
+    </modules>
+  </component>
+</project>
