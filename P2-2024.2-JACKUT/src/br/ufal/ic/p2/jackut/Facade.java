@@ -1,5 +1,4 @@
 package br.ufal.ic.p2.jackut;
-
 import br.ufal.ic.p2.jackut.exceptions.*;
 
 /**
@@ -145,4 +144,35 @@ public class Facade {
     public void encerrarSistema() {
         jackut.encerrarSistema();
     }
+
+    public void criarComunidade(String sessaoId, String nome, String descricao) {
+        jackut.criarComunidade(sessaoId, nome, descricao);
+    }
+
+    public String getDescricaoComunidade(String nome) {
+        return jackut.getDescricaoComunidade(nome);
+    }
+
+    public String getDonoComunidade(String nome) {
+        return jackut.getDonoComunidade(nome);
+    }
+
+    public String getMembrosComunidade(String nome) {
+        return jackut.getMembrosComunidade(nome);
+    }
+
+    public String getComunidades(String sessaoId) {
+        String login = jackut.validarSessao(sessaoId); // Valida a sessão
+        return jackut.getComunidades(login);
+    }
+
+    public void adicionarComunidade(String sessaoId, String nomeComunidade) {
+        String login = jackut.validarSessao(sessaoId);
+        Comunidade comunidade = jackut.comunidades.get(nomeComunidade);
+        if (comunidade == null) {
+            throw new ComunidadeNaoExisteException();
+        }
+        comunidade.adicionarMembro(login);
+    }
+
 }

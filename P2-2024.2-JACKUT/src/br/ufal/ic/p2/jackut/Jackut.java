@@ -7,9 +7,7 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Classe responsável pela lógica de negócio do sistema Jackut.
@@ -19,9 +17,11 @@ import java.util.UUID;
 public class Jackut implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private Map<String, Usuario> usuarios;  // Mapa de login -> Usuario
-    private transient Map<String, String> sessoes;  // Mapa de sessaoId -> login
+    private Map<String, Usuario> usuarios = new HashMap<>();
+    private Map<String, Comunidade> comunidades = new HashMap<>();
+    private transient Map<String, String> sessoes = new HashMap<>();   // Mapa de sessaoId -> login
     private static final String ARQ_PERSISTENCIA = "jackut.dat";  // Arquivo de persistência
+
 
     /**
      * Construtor da classe Jackut.
@@ -29,14 +29,48 @@ public class Jackut implements Serializable {
      * Caso contrário, inicializa as coleções de usuários e sessões.
      */
     public Jackut() {
-        carregarDadosDoArquivo();
-        if (this.usuarios == null) {
+        try {
+            carregarDadosDoArquivo();
+        } catch (FalhaAoCarregarDadosException e) {
+            // Reinicializa os dados se o carregamento falhar
             this.usuarios = new HashMap<>();
+            this.comunidades = new HashMap<>();
+            this.sessoes = new HashMap<>();
         }
-        this.sessoes = new HashMap<>();
+
+        // Garanta que as coleções nunca sejam null
+        if (this.usuarios == null) this.usuarios = new HashMap<>();
+        if (this.comunidades == null) this.comunidades = new HashMap<>();
+        if (this.sessoes == null) this.sessoes = new HashMap<>();
     }
 
     //  Métodos principais
+
+    // Método para criar comunidade
+    public void criarComunidade(String sessaoId, String nome, String descricao) {
+        String login = validarSessao(sessaoId);
+        if (comunidades.containsKey(nome)) {
+            throw new ComunidadeJaExisteException();
+        }
+        comunidades.put(nome, new Comunidade(nome, descricao, login));
+    }
+
+    // Métodos para recuperar dados da comunidade
+    public String getDescricaoComunidade(String nome) {
+        Comunidade c = comunidades.get(nome);
+        if (c == null) throw new ComunidadeNaoExisteException();
+        return c.getDescricao();
+    }
+
+    public String getDonoComunidade(String nome) {
+        Comunidade c = comunidades.get(nome);
+        if (c == null) throw new ComunidadeNaoExisteException();
+        return c.getDono();
+    }
+
+    private String formatarSet(Set<String> set) {
+        return "{" + String.join(",", set) + "}";
+    }
 
     /**
      * Zera os dados do sistema em memória. Usado principalmente em testes.
@@ -44,9 +78,8 @@ public class Jackut implements Serializable {
      */
     public void zerarSistema() {
         usuarios.clear();
-        if (sessoes != null) {
-            sessoes.clear();
-        }
+        comunidades.clear();
+        sessoes.clear();
     }
 
     /**
@@ -55,9 +88,9 @@ public class Jackut implements Serializable {
      *
      * @param login O login do novo usuário.
      * @param senha A senha do novo usuário.
-     * @param nome O nome do novo usuário.
-     * @throws LoginInvalidoException Se o login for inválido.
-     * @throws SenhaInvalidaException Se a senha for inválida.
+     * @param nome  O nome do novo usuário.
+     * @throws LoginInvalidoException            Se o login for inválido.
+     * @throws SenhaInvalidaException            Se a senha for inválida.
      * @throws ContaComEsseNomeJaExisteException Se já existir uma conta com o mesmo login.
      */
     public void criarUsuario(String login, String senha, String nome) {
@@ -104,10 +137,10 @@ public class Jackut implements Serializable {
      * Retorna o valor de um atributo do usuário especificado.
      * Lança "Usuário não cadastrado" se o login não for encontrado.
      *
-     * @param login O login do usuário.
+     * @param login    O login do usuário.
      * @param atributo O atributo desejado.
      * @return O valor do atributo.
-     * @throws UsuarioNaoCadastradoException Se o usuário não estiver cadastrado.
+     * @throws UsuarioNaoCadastradoException  Se o usuário não estiver cadastrado.
      * @throws AtributoNaoPreenchidoException Se o atributo não estiver preenchido.
      */
     public String getAtributoUsuario(String login, String atributo) {
@@ -124,7 +157,7 @@ public class Jackut implements Serializable {
      *
      * @param sessaoId O ID da sessão do usuário.
      * @param atributo O atributo a ser editado.
-     * @param valor O novo valor do atributo.
+     * @param valor    O novo valor do atributo.
      * @throws UsuarioNaoCadastradoException Se a sessão não for válida ou o usuário não estiver cadastrado.
      */
     public void editarPerfil(String sessaoId, String atributo, String valor) {
@@ -144,11 +177,11 @@ public class Jackut implements Serializable {
      * Lança erros conforme os requisitos da User Story 3.
      *
      * @param sessaoId O ID da sessão do usuário que está adicionando o amigo.
-     * @param amigo O login do amigo a ser adicionado.
-     * @throws UsuarioNaoCadastradoException Se a sessão for inválida ou o usuário não estiver cadastrado.
-     * @throws UsuarioNaoPodeAdicionarASiMesmoException Se o usuário tentar adicionar a si mesmo como amigo.
+     * @param amigo    O login do amigo a ser adicionado.
+     * @throws UsuarioNaoCadastradoException             Se a sessão for inválida ou o usuário não estiver cadastrado.
+     * @throws UsuarioNaoPodeAdicionarASiMesmoException  Se o usuário tentar adicionar a si mesmo como amigo.
      * @throws UsuarioJaEstaAdicionadoEsperandoException Se o amigo já estiver esperando aceitação do convite.
-     * @throws UsuarioJaEstaAdicionadoException Se o amigo já estiver adicionado como amigo.
+     * @throws UsuarioJaEstaAdicionadoException          Se o amigo já estiver adicionado como amigo.
      */
     public void adicionarAmigo(String sessaoId, String amigo) {
         String loginSolicitante = sessoes.get(sessaoId);
@@ -223,10 +256,10 @@ public class Jackut implements Serializable {
      * Envia um recado de um usuário para outro destinatário.
      * Lança exceções apropriadas caso a sessão seja inválida ou o usuário tente enviar um recado para si mesmo.
      *
-     * @param sessaoId O ID da sessão do usuário que está enviando o recado.
+     * @param sessaoId     O ID da sessão do usuário que está enviando o recado.
      * @param destinatario O login do destinatário.
-     * @param recado O conteúdo do recado.
-     * @throws UsuarioNaoCadastradoException Se o destinatário não estiver cadastrado.
+     * @param recado       O conteúdo do recado.
+     * @throws UsuarioNaoCadastradoException                  Se o destinatário não estiver cadastrado.
      * @throws UsuarioNaoPodeEnviarRecadoParaSiMesmoException Se o usuário tentar enviar um recado para si mesmo.
      */
     public void enviarRecado(String sessaoId, String destinatario, String recado) {
@@ -251,7 +284,7 @@ public class Jackut implements Serializable {
      * @param sessaoId O ID da sessão do usuário.
      * @return O conteúdo do primeiro recado.
      * @throws UsuarioNaoCadastradoException Se o login não estiver cadastrado.
-     * @throws NaoHaRecadosException Se não houver recados na fila.
+     * @throws NaoHaRecadosException         Se não houver recados na fila.
      */
     public String lerRecado(String sessaoId) {
         String login = sessoes.get(sessaoId);
@@ -279,6 +312,33 @@ public class Jackut implements Serializable {
         }
     }
 
+    public void adicionarComunidade(String sessaoId, String nomeComunidade) {
+        String login = validarSessao(sessaoId);
+        Comunidade comunidade = comunidades.get(nomeComunidade);
+
+        if (comunidade == null) {
+            throw new ComunidadeNaoExisteException();
+        }
+
+        if (comunidade.getMembros().contains(login)) {
+            throw new UsuarioJaEstaNaComunidadeException();
+        }
+
+        comunidade.adicionarMembro(login); // Adiciona apenas à comunidade especificada
+    }
+
+    public String getComunidades(String login) {
+        Set<String> comunidadesDoUsuario = new LinkedHashSet<>(); // Mantém a ordem de inserção
+
+        for (Comunidade c : comunidades.values()) {
+            if (c.getMembros().contains(login)) {
+                comunidadesDoUsuario.add(c.getNome());
+            }
+        }
+
+        return "{" + String.join(",", comunidadesDoUsuario) + "}";
+    }
+
     //  Métodos privados de persistência
 
     /**
@@ -291,8 +351,9 @@ public class Jackut implements Serializable {
             try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(f))) {
                 Jackut jackutPersistido = (Jackut) in.readObject();
                 this.usuarios = jackutPersistido.usuarios;
+                this.comunidades = jackutPersistido.comunidades; // Carrega comunidades
             } catch (Exception e) {
-                e.printStackTrace();
+                throw new FalhaAoCarregarDadosException();
             }
         }
     }
@@ -307,4 +368,29 @@ public class Jackut implements Serializable {
             e.printStackTrace();
         }
     }
+
+    public String getLoginPorSessao(String sessaoId) {
+        String login = sessoes.get(sessaoId);
+        if (login == null) {
+            throw new UsuarioNaoCadastradoException();
+        }
+        return login;
+    }
+
+    public String validarSessao(String sessaoId) {
+        String login = sessoes.get(sessaoId);
+        if (login == null) {
+            throw new UsuarioNaoCadastradoException();
+        }
+        return login;
+    }
+
+    public String getMembrosComunidade(String nome) {
+        Comunidade c = comunidades.get(nome);
+        if (c == null) throw new ComunidadeNaoExisteException();
+
+        // Mantém a ordem de inserção (não ordena)
+        return "{" + String.join(",", c.getMembros()) + "}";
+    }
+
 }
