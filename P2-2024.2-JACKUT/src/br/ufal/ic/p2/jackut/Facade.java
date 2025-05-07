@@ -1,178 +1,296 @@
 package br.ufal.ic.p2.jackut;
+
 import br.ufal.ic.p2.jackut.exceptions.*;
+import java.util.Set;
 
 /**
- * A classe Facade fornece uma interface simples para interagir com o sistema Jackut.
- * Ela expõe os métodos necessários para realizar ações no sistema, como criar usuários,
- * gerenciar sessões, adicionar amigos e manipular perfis.
- * Esta classe não lida com exceções diretamente, deixando-as propagar para que o EasyAccept
- * capture as mensagens de erro apropriadas durante os testes de aceitação.
+ * A classe {@code Facade} atua como uma interface de acesso para as funcionalidades do sistema Jackut.
+ * Ela abstrai a complexidade do funcionamento interno do sistema, fornecendo métodos para gerenciar
+ * usuários, amigos, comunidades e outros aspectos relacionados à rede social.
+ * <p>
+ * Esta classe delega as chamadas aos métodos correspondentes da classe {@link Jackut}, que gerencia
+ * a lógica do sistema.
+ * </p>
+ *
+ * @author [Seu Nome]
+ * @version 1.0
  */
 public class Facade {
-    private Jackut jackut;
+
+    private Jackut jackut = new Jackut();
 
     /**
-     * Construtor da classe Facade que inicializa o sistema Jackut.
-     * O Jackut é carregado com os dados persistidos, se houver.
-     */
-    public Facade() {
-        this.jackut = new Jackut();
-    }
-
-    /**
-     * Zera todos os dados do sistema, limpando usuários e sessões.
-     * Usado principalmente em testes de aceitação.
+     * Zera o sistema, removendo todos os dados existentes.
      */
     public void zerarSistema() {
         jackut.zerarSistema();
     }
 
     /**
-     * Cria um novo usuário no sistema com login, senha e nome fornecidos.
+     * Cria um novo usuário no sistema com o login, senha e nome fornecidos.
      *
-     * @param login O login do novo usuário.
-     * @param senha A senha do novo usuário.
-     * @param nome O nome do novo usuário.
+     * @param l o login do novo usuário
+     * @param s a senha do novo usuário
+     * @param n o nome do novo usuário
      */
-    public void criarUsuario(String login, String senha, String nome) {
-        jackut.criarUsuario(login, senha, nome);
+    public void criarUsuario(String l, String s, String n) {
+        jackut.criarUsuario(l, s, n);
     }
 
     /**
-     * Abre uma sessão para o usuário com o login e senha fornecidos.
-     * Retorna um ID de sessão único para o usuário autenticado.
+     * Abre uma sessão para o usuário fornecido com login e senha.
      *
-     * @param login O login do usuário.
-     * @param senha A senha do usuário.
-     * @return O ID da sessão.
-     * @throws LoginOuSenhaInvalidosException Se o login ou a senha forem inválidos.
+     * @param l o login do usuário
+     * @param s a senha do usuário
+     * @return uma string representando a sessão do usuário
      */
-    public String abrirSessao(String login, String senha) {
-        return jackut.abrirSessao(login, senha);
+    public String abrirSessao(String l, String s) {
+        return jackut.abrirSessao(l, s);
     }
 
     /**
-     * Obtém o valor de um atributo de um usuário especificado.
+     * Obtém o valor de um atributo de um usuário.
      *
-     * @param login O login do usuário.
-     * @param atributo O nome do atributo desejado.
-     * @return O valor do atributo solicitado.
-     * @throws UsuarioNaoCadastradoException Se o usuário não estiver cadastrado.
-     * @throws AtributoNaoPreenchidoException Se o atributo solicitado não estiver preenchido.
+     * @param l o login do usuário
+     * @param a o nome do atributo a ser obtido
+     * @return o valor do atributo solicitado
      */
-    public String getAtributoUsuario(String login, String atributo) {
-        return jackut.getAtributoUsuario(login, atributo);
+    public String getAtributoUsuario(String l, String a) {
+        return jackut.getAtributoUsuario(l, a);
     }
 
     /**
-     * Edita ou cria um atributo de perfil para o usuário com a sessão aberta.
+     * Edita o perfil de um usuário.
      *
-     * @param sessaoId O ID da sessão do usuário.
-     * @param atributo O nome do atributo a ser editado.
-     * @param valor O novo valor do atributo.
-     * @throws UsuarioNaoCadastradoException Se a sessão for inválida.
+     * @param sid a sessão do usuário
+     * @param a o atributo a ser editado
+     * @param v o novo valor do atributo
      */
-    public void editarPerfil(String sessaoId, String atributo, String valor) {
-        jackut.editarPerfil(sessaoId, atributo, valor);
+    public void editarPerfil(String sid, String a, String v) {
+        jackut.editarPerfil(sid, a, v);
     }
 
     /**
-     * Adiciona um amigo ao usuário que está com a sessão aberta.
-     * Se o usuário já tiver uma amizade ou convite pendente, uma exceção será lançada.
+     * Adiciona um amigo a um usuário.
      *
-     * @param sessaoId O ID da sessão do usuário.
-     * @param amigo O login do amigo a ser adicionado.
-     * @throws UsuarioNaoCadastradoException Se a sessão for inválida ou o usuário não estiver cadastrado.
-     * @throws UsuarioJaEstaAdicionadoEsperandoException Se o amigo já está esperando a aceitação do convite.
-     * @throws UsuarioJaEstaAdicionadoException Se o amigo já for amigo do usuário.
+     * @param sid a sessão do usuário
+     * @param a o login do amigo a ser adicionado
      */
-    public void adicionarAmigo(String sessaoId, String amigo) {
-        jackut.adicionarAmigo(sessaoId, amigo);
+    public void adicionarAmigo(String sid, String a) {
+        jackut.adicionarAmigo(sid, a);
     }
 
     /**
      * Verifica se dois usuários são amigos.
      *
-     * @param login O login do primeiro usuário.
-     * @param amigo O login do segundo usuário.
-     * @return Retorna true se os usuários forem amigos, caso contrário, false.
-     * @throws UsuarioNaoCadastradoException Se qualquer um dos usuários não estiver cadastrado.
+     * @param l o login do usuário
+     * @param a o login do possível amigo
+     * @return {@code true} se forem amigos, {@code false} caso contrário
      */
-    public boolean ehAmigo(String login, String amigo) {
-        return jackut.ehAmigo(login, amigo);
+    public boolean ehAmigo(String l, String a) {
+        return jackut.ehAmigo(l, a);
     }
 
     /**
-     * Obtém a lista de amigos de um usuário.
+     * Obtém os amigos de um usuário.
      *
-     * @param login O login do usuário.
-     * @return A lista de amigos do usuário em formato de string.
-     * @throws UsuarioNaoCadastradoException Se o usuário não estiver cadastrado.
+     * @param l o login do usuário
+     * @return uma string com os amigos do usuário
      */
-    public String getAmigos(String login) {
-        return jackut.getAmigos(login);
+    public String getAmigos(String l) {
+        return jackut.getAmigos(l);
     }
 
     /**
      * Envia um recado de um usuário para outro.
      *
-     * @param sessaoId O ID da sessão do usuário que está enviando o recado.
-     * @param destinatario O login do destinatário do recado.
-     * @param recado O conteúdo do recado.
-     * @throws UsuarioNaoCadastradoException Se a sessão ou o destinatário não estiverem cadastrados.
-     * @throws UsuarioNaoPodeEnviarRecadoParaSiMesmoException Se o usuário tentar enviar um recado para si mesmo.
+     * @param sid a sessão do usuário que está enviando o recado
+     * @param d o destinatário do recado
+     * @param r o conteúdo do recado
      */
-    public void enviarRecado(String sessaoId, String destinatario, String recado) {
-        jackut.enviarRecado(sessaoId, destinatario, recado);
+    public void enviarRecado(String sid, String d, String r) {
+        jackut.enviarRecado(sid, d, r);
     }
 
     /**
-     * Lê o primeiro recado da fila de recados do usuário que está com a sessão aberta.
+     * Lê os recados de um usuário.
      *
-     * @param sessaoId O ID da sessão do usuário.
-     * @return O conteúdo do recado.
-     * @throws UsuarioNaoCadastradoException Se a sessão não for válida.
-     * @throws NaoHaRecadosException Se não houver recados.
+     * @param sid a sessão do usuário
+     * @return o conteúdo dos recados do usuário
      */
-    public String lerRecado(String sessaoId) {
-        return jackut.lerRecado(sessaoId);
+    public String lerRecado(String sid) {
+        return jackut.lerRecado(sid);
     }
 
     /**
-     * Encerra o sistema, salvando os dados persistidos e limpando as sessões.
+     * Cria uma nova comunidade no sistema.
+     *
+     * @param sid a sessão do usuário
+     * @param n o nome da comunidade
+     * @param d a descrição da comunidade
+     */
+    public void criarComunidade(String sid, String n, String d) {
+        jackut.criarComunidade(sid, n, d);
+    }
+
+    /**
+     * Obtém a descrição de uma comunidade.
+     *
+     * @param n o nome da comunidade
+     * @return a descrição da comunidade
+     */
+    public String getDescricaoComunidade(String n) {
+        return jackut.getDescricaoComunidade(n);
+    }
+
+    /**
+     * Obtém o dono de uma comunidade.
+     *
+     * @param n o nome da comunidade
+     * @return o login do dono da comunidade
+     */
+    public String getDonoComunidade(String n) {
+        return jackut.getDonoComunidade(n);
+    }
+
+    /**
+     * Obtém os membros de uma comunidade.
+     *
+     * @param n o nome da comunidade
+     * @return uma string com os membros da comunidade
+     */
+    public String getMembrosComunidade(String n) {
+        return jackut.getMembrosComunidade(n);
+    }
+
+    /**
+     * Obtém as comunidades associadas a uma chave de busca.
+     *
+     * @param chave a chave de busca para localizar comunidades
+     * @return uma string com as comunidades encontradas
+     */
+    public String getComunidades(String chave) {
+        return jackut.getComunidades(chave);
+    }
+
+    /**
+     * Adiciona um usuário a uma comunidade.
+     *
+     * @param sid a sessão do usuário
+     * @param n o nome da comunidade
+     */
+    public void adicionarComunidade(String sid, String n) {
+        jackut.adicionarComunidade(sid, n);
+    }
+
+    /**
+     * Envia uma mensagem a uma comunidade.
+     *
+     * @param sid a sessão do usuário
+     * @param com o nome da comunidade
+     * @param m o conteúdo da mensagem
+     */
+    public void enviarMensagem(String sid, String com, String m) {
+        jackut.enviarMensagem(sid, com, m);
+    }
+
+    /**
+     * Lê as mensagens de um usuário.
+     *
+     * @param sid a sessão do usuário
+     * @return o conteúdo das mensagens do usuário
+     */
+    public String lerMensagem(String sid) {
+        return jackut.lerMensagem(sid);
+    }
+
+    /**
+     * Adiciona um ídolo a um usuário.
+     *
+     * @param sid a sessão do usuário
+     * @param idolo o login do ídolo a ser adicionado
+     */
+    public void adicionarIdolo(String sid, String idolo) {
+        jackut.adicionarIdolo(sid, idolo);
+    }
+
+    /**
+     * Verifica se um usuário é fã de outro.
+     *
+     * @param login o login do fã
+     * @param idolo o login do ídolo
+     * @return {@code true} se o usuário for fã do ídolo, {@code false} caso contrário
+     */
+    public boolean ehFa(String login, String idolo) {
+        return jackut.ehFa(login, idolo);
+    }
+
+    /**
+     * Obtém os fãs de um usuário.
+     *
+     * @param login o login do ídolo
+     * @return uma string com os fãs do usuário
+     */
+    public String getFas(String login) {
+        Set<String> fas = jackut.getFas(login);
+        return "{" + String.join(",", fas) + "}";
+    }
+
+    /**
+     * Adiciona uma paquera a um usuário.
+     *
+     * @param sid a sessão do usuário
+     * @param paquera o login da paquera a ser adicionada
+     */
+    public void adicionarPaquera(String sid, String paquera) {
+        jackut.adicionarPaquera(sid, paquera);
+    }
+
+    /**
+     * Verifica se um usuário tem uma paquera.
+     *
+     * @param login o login do usuário
+     * @param paquera o login da paquera
+     * @return {@code true} se for paquera, {@code false} caso contrário
+     */
+    public boolean ehPaquera(String login, String paquera) {
+        return jackut.ehPaquera(login, paquera);
+    }
+
+    /**
+     * Obtém as paqueras de um usuário.
+     *
+     * @param login o login do usuário
+     * @return uma string com as paqueras do usuário
+     */
+    public String getPaqueras(String login) {
+        Set<String> ps = jackut.getPaqueras(login);
+        return "{" + String.join(",", ps) + "}";
+    }
+
+    /**
+     * Adiciona um inimigo a um usuário.
+     *
+     * @param sid a sessão do usuário
+     * @param inimigo o login do inimigo a ser adicionado
+     */
+    public void adicionarInimigo(String sid, String inimigo) {
+        jackut.adicionarInimigo(sid, inimigo);
+    }
+
+    /**
+     * Remove um usuário do sistema.
+     *
+     * @param sid a sessão do usuário a ser removido
+     */
+    public void removerUsuario(String sid) {
+        jackut.removerUsuario(sid);
+    }
+
+    /**
+     * Encerra o sistema, apagando todos os dados.
      */
     public void encerrarSistema() {
         jackut.encerrarSistema();
     }
-
-    public void criarComunidade(String sessaoId, String nome, String descricao) {
-        jackut.criarComunidade(sessaoId, nome, descricao);
-    }
-
-    public String getDescricaoComunidade(String nome) {
-        return jackut.getDescricaoComunidade(nome);
-    }
-
-    public String getDonoComunidade(String nome) {
-        return jackut.getDonoComunidade(nome);
-    }
-
-    public String getMembrosComunidade(String nome) {
-        return jackut.getMembrosComunidade(nome);
-    }
-
-    public String getComunidades(String sessaoId) {
-        String login = jackut.validarSessao(sessaoId); // Valida a sessão
-        return jackut.getComunidades(login);
-    }
-
-    public void adicionarComunidade(String sessaoId, String nomeComunidade) {
-        String login = jackut.validarSessao(sessaoId);
-        Comunidade comunidade = jackut.comunidades.get(nomeComunidade);
-        if (comunidade == null) {
-            throw new ComunidadeNaoExisteException();
-        }
-        comunidade.adicionarMembro(login);
-    }
-
 }
